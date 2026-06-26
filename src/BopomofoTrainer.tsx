@@ -193,7 +193,7 @@ const CSS = `
   --void:#EFE9D8; --rowhead:74px; --colmin:56px;
   font-family:"Zen Kaku Gothic New",system-ui,-apple-system,sans-serif;
   color:var(--ink); background:var(--paper);
-  min-height:100vh; padding:clamp(14px,3vw,34px);
+  min-height:100vh; padding:clamp(14px,3vw,34px); padding-bottom:calc(clamp(14px,3vw,34px) + 100px);
   -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%; box-sizing:border-box;
 }
 .bpmf *{box-sizing:border-box;}
@@ -356,6 +356,42 @@ const CSS = `
 .bpmf .spk:active{transform:translate(1px,1px);}
 .bpmf .spk:focus-visible{outline:3px solid var(--amber);outline-offset:2px;}
 
+/* ピンインバー（固定下部） */
+.bpmf .pinbar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:var(--teal);color:#fff;
+  padding:10px clamp(14px,3vw,34px) max(10px,env(safe-area-inset-bottom,0px));
+  display:grid;grid-template-columns:52px 1fr auto;gap:2px 14px;
+  box-shadow:0 -3px 16px rgba(0,0,0,.22);
+}
+.bpmf .pinbar .pbig{
+  grid-column:1;grid-row:1/3;align-self:center;
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:900;
+  font-size:40px;line-height:1;text-align:center;
+}
+.bpmf .pinbar .ppinyin{
+  grid-column:2;font-size:16px;font-weight:700;
+  display:flex;align-items:center;gap:8px;
+}
+.bpmf .pinbar .ptip{
+  grid-column:2;font-size:11.5px;line-height:1.4;color:rgba(255,255,255,.85);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.bpmf .pinbar .pspk{
+  grid-column:3;grid-row:1/3;align-self:center;
+  font-family:"Zen Kaku Gothic New";font-weight:700;font-size:13px;
+  border:2px solid rgba(255,255,255,.5);background:rgba(255,255,255,.16);
+  color:#fff;padding:6px 10px;border-radius:9px;cursor:pointer;touch-action:manipulation;
+}
+.bpmf .pinbar .pspk:focus-visible{outline:3px solid var(--amber);outline-offset:2px;}
+.bpmf .pinbar.empty{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:var(--paper2);color:var(--sub);font-size:13px;text-align:center;
+  border-top:1px solid var(--line);
+  padding:12px clamp(14px,3vw,34px) max(12px,env(safe-area-inset-bottom,0px));
+  box-shadow:0 -2px 8px rgba(0,0,0,.08);
+}
+
 @media (max-width:560px){
   .bpmf{--rowhead:52px;--colmin:44px;}
   .bpmf .flash .q.zhuyin{font-size:74px;}
@@ -432,113 +468,92 @@ function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => voi
   };
 
   return (
-    <div className="card">
-      <p className="secttl">子音 — 調音位置 × 調音方法</p>
-      <div className="grid" style={{ "--mcount": MANNERS.length } as React.CSSProperties}>
-        <div className="gh corner" />
-        {MANNERS.map((m) => (
-          <div key={m} className="gh" title={MANNER_TIPS[m]}>
-            {m}
-          </div>
-        ))}
-        {PLACES.map((place) => (
-          <React.Fragment key={place}>
-            <div className="gh rh" title={PLACE_TIPS[place]}>
-              {place}
+    <>
+      <div className="card">
+        <p className="secttl">子音 — 調音位置 × 調音方法</p>
+        <div className="grid" style={{ "--mcount": MANNERS.length } as React.CSSProperties}>
+          <div className="gh corner" />
+          {MANNERS.map((m) => (
+            <div key={m} className="gh" title={MANNER_TIPS[m]}>
+              {m}
             </div>
-            {MANNERS.map((manner) => {
-              const c = byZ[`${place}|${manner}`];
-              if (!c)
+          ))}
+          {PLACES.map((place) => (
+            <React.Fragment key={place}>
+              <div className="gh rh" title={PLACE_TIPS[place]}>
+                {place}
+              </div>
+              {MANNERS.map((manner) => {
+                const c = byZ[`${place}|${manner}`];
+                if (!c)
+                  return (
+                    <div key={manner} className="void">
+                      ·
+                    </div>
+                  );
+                const mc = masteryColor(stats[c.z]);
+                const isSel = sel && sel.z === c.z;
                 return (
-                  <div key={manner} className="void">
-                    ·
+                  <div className="tilewrap" key={manner}>
+                    <button
+                      className={`tile ${mannerClass(manner)} ${isSel ? "sel" : ""}`}
+                      onClick={() => tap(c)}
+                      aria-label={`${c.z} ${c.p} ${place} ${manner}`}
+                    >
+                      <span className="z">{c.z}</span>
+                      <span className="p">{c.p}</span>
+                    </button>
+                    {mc && <span className="mastery" style={{ background: mc }} />}
                   </div>
                 );
-              const mc = masteryColor(stats[c.z]);
-              const isSel = sel && sel.z === c.z;
-              return (
-                <div className="tilewrap" key={manner}>
-                  <button
-                    className={`tile ${mannerClass(manner)} ${isSel ? "sel" : ""}`}
-                    onClick={() => tap(c)}
-                    aria-label={`${c.z} ${c.p} ${place} ${manner}`}
-                  >
-                    <span className="z">{c.z}</span>
-                    <span className="p">{c.p}</span>
-                  </button>
-                  {mc && <span className="mastery" style={{ background: mc }} />}
-                </div>
-              );
-            })}
-          </React.Fragment>
-        ))}
+              })}
+            </React.Fragment>
+          ))}
+        </div>
+
+        <p className="secttl" style={{ marginTop: 26 }}>
+          母音
+        </p>
+        <div className="vgrid">
+          {["介音", "単母音", "複母音", "鼻母音", "そり舌母音"].map((g) => (
+            <React.Fragment key={g}>
+              <div className="vgroup">{g}</div>
+              {VOWELS.filter((v) => v.group === g).map((v) => {
+                const mc = masteryColor(stats[v.z]);
+                return (
+                  <div className="tilewrap" key={v.z}>
+                    <button className="tile" onClick={() => tap(v)} aria-label={`${v.z} ${v.p}`}>
+                      <span className="z">{v.z}</span>
+                      <span className="p">{v.p}</span>
+                    </button>
+                    {mc && <span className="mastery" style={{ background: mc }} />}
+                  </div>
+                );
+              })}
+            </React.Fragment>
+          ))}
+        </div>
       </div>
 
       {sel ? (
-        <div className="detail">
-          <div className="big">{sel.z}</div>
-          <div
-            className="row"
-            style={{
-              fontSize: 20,
-              fontWeight: 700,
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-            }}
-          >
+        <div className="pinbar">
+          <div className="pbig">{sel.z}</div>
+          <div className="ppinyin">
             ピンイン <b>{sel.p}</b>
-            <button className="spk" onClick={() => speakZ(sel.z)} aria-label="もう一度再生">
-              🔊
-            </button>
           </div>
-          {"place" in sel ? (
-            <>
-              <div className="row">
-                <b>{sel.place}</b>：{PLACE_TIPS[sel.place]}
-              </div>
-              <div className="row">
-                <b>{sel.manner}</b>：{MANNER_TIPS[sel.manner]}
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="row">
-                <b>{sel.group}</b>
-              </div>
-              <div className="row">{VOWEL_TIPS[sel.z] || VOWEL_GROUP_TIPS[sel.group]}</div>
-            </>
-          )}
+          <div className="ptip">
+            {"place" in sel
+              ? `${sel.place}：${PLACE_TIPS[sel.place]}　${sel.manner}：${MANNER_TIPS[sel.manner]}`
+              : `${sel.group}：${VOWEL_TIPS[sel.z] || VOWEL_GROUP_TIPS[sel.group]}`}
+          </div>
+          <button className="pspk" onClick={() => speakZ(sel.z)} aria-label="もう一度再生">
+            🔊
+          </button>
         </div>
       ) : (
-        <div className="detail placeholder">
-          タイルをタップすると、ピンインと発音のコツが出ます。右上の点は習熟度（カード学習の正答率）です。
-        </div>
+        <div className="pinbar empty">タイルをタップするとピンインと発音のコツが表示されます</div>
       )}
-
-      <p className="secttl" style={{ marginTop: 26 }}>
-        母音
-      </p>
-      <div className="vgrid">
-        {["介音", "単母音", "複母音", "鼻母音", "そり舌母音"].map((g) => (
-          <React.Fragment key={g}>
-            <div className="vgroup">{g}</div>
-            {VOWELS.filter((v) => v.group === g).map((v) => {
-              const mc = masteryColor(stats[v.z]);
-              return (
-                <div className="tilewrap" key={v.z}>
-                  <button className="tile" onClick={() => tap(v)} aria-label={`${v.z} ${v.p}`}>
-                    <span className="z">{v.z}</span>
-                    <span className="p">{v.p}</span>
-                  </button>
-                  {mc && <span className="mastery" style={{ background: mc }} />}
-                </div>
-              );
-            })}
-          </React.Fragment>
-        ))}
-      </div>
-    </div>
+    </>
   );
 }
 
