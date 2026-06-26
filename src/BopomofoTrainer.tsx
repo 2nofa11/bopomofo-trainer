@@ -1,5 +1,9 @@
-// @ts-nocheck
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+
+type Consonant = { z: string; p: string; place: string; manner: string }
+type Vowel    = { z: string; p: string; group: string }
+type Item     = Consonant | Vowel
+type Stats    = Record<string, { seen: number; correct: number }>
 
 /* ───────────────────────────── データ ─────────────────────────────
    出典: 「ボポモフォと発音のコツ.pdf」(モーガンの台湾中国語講座 / Morgan Mandarin)
@@ -53,7 +57,7 @@ const VOWELS = [
   { z: "ㄦ", p: "er", group: "そり舌母音" },
 ];
 
-const PLACE_TIPS = {
+const PLACE_TIPS: Record<string, string> = {
   両唇音: "上下両方の唇を使って発音します。",
   唇歯音: "下唇を上の歯に軽くあてて発音します。",
   舌尖音: "舌先を上の歯茎につけて発音します。",
@@ -64,7 +68,7 @@ const PLACE_TIPS = {
   舌歯音: "舌先を前歯の裏側に押しつけて発音します。",
 };
 
-const MANNER_TIPS = {
+const MANNER_TIPS: Record<string, string> = {
   無気音: "息を抑え気味で出します。",
   有気音: "息を強く吹き出します。",
   鼻音: "息を鼻に通して出します。",
@@ -73,7 +77,7 @@ const MANNER_TIPS = {
 };
 
 /* 母音の分類解説。元PDFのコツは子音専用のため、ここは標準的な音声学に基づく補足。 */
-const VOWEL_GROUP_TIPS = {
+const VOWEL_GROUP_TIPS: Record<string, string> = {
   介音: "母音や子音の前に入って音をつなぐ半母音。単独でも音節になります（ㄧ＝一 など）。",
   単母音: "1つの母音だけで構成される、いちばん基本の音。",
   複母音: "2つの母音がなめらかにつながる二重母音。",
@@ -82,7 +86,7 @@ const VOWEL_GROUP_TIPS = {
 };
 
 /* 母音の個別の発音のコツ（モーガンの台湾中国語講座のカードより文字起こし）。 */
-const VOWEL_TIPS = {
+const VOWEL_TIPS: Record<string, string> = {
   ㄧ: "日本語の「い」の音とほぼ同じです。「い」よりも、もっと口を横に開いて「い」と発音します。",
   ㄨ: "日本語の「う」の音とほぼ同じです。「う」よりも、唇をもっとすぼめて「う」と発音します。",
   ㄩ: "日本語にはない音です。唇は「ㄨ」よりさらに口をすぼめ、“い”と“ゆ”の中間くらいの気持ちで発音します。",
@@ -104,7 +108,7 @@ const VOWEL_TIPS = {
 /* TTS用：各音に「その発音を持つ漢字」を割り当てる。
    ローマ字を中国語音声に渡すと誤読するため、漢字で読ませる。
    子音は単独発音できないので、注音の暗唱どおり既定母音つきの音にする(ㄅ→波 bo 等)。 */
-const SAY = {
+const SAY: Record<string, string> = {
   ㄅ: "波", ㄆ: "坡", ㄇ: "摸", ㄈ: "佛",
   ㄉ: "德", ㄊ: "特", ㄋ: "呢", ㄌ: "勒",
   ㄍ: "哥", ㄎ: "科", ㄏ: "喝",
@@ -119,7 +123,7 @@ const SAY = {
 };
 
 const ALL = [...CONSONANTS, ...VOWELS];
-const byZ = Object.fromEntries(CONSONANTS.map((c) => [`${c.place}|${c.manner}`, c]));
+const byZ: Record<string, Consonant> = Object.fromEntries(CONSONANTS.map((c) => [`${c.place}|${c.manner}`, c]));
 
 /* ───────────────────────── 永続ストレージ ─────────────────────────
    localStorage を使って学習記録をセッション横断で保存する。
@@ -333,8 +337,8 @@ const CSS = `
 `;
 
 /* ───────────────────────────── helpers ───────────────────────────── */
-const mannerClass = (m) => `m${MANNERS.indexOf(m)}`;
-const masteryColor = (s) => {
+const mannerClass = (m: string) => `m${MANNERS.indexOf(m)}`;
+const masteryColor = (s: Stats[string] | undefined) => {
   if (!s || s.seen === 0) return null;
   const rate = s.correct / s.seen;
   if (rate >= 0.8 && s.seen >= 2) return "var(--moss)";
@@ -343,8 +347,8 @@ const masteryColor = (s) => {
 };
 
 /* 台湾華語(zh-TW)優先で発音する。漢字を渡すことで正しい音にする。 */
-function useSpeech(muted) {
-  const voiceRef = useRef(null);
+function useSpeech(muted: boolean) {
+  const voiceRef = useRef<SpeechSynthesisVoice | null>(null);
   const supported =
     typeof window !== "undefined" && "speechSynthesis" in window;
 
@@ -365,7 +369,7 @@ function useSpeech(muted) {
   }, [supported]);
 
   const speakZ = useCallback(
-    (zhuyin) => {
+    (zhuyin: string) => {
       if (muted || !supported) return;
       const text = SAY[zhuyin];
       if (!text) return;
@@ -387,10 +391,10 @@ function useSpeech(muted) {
 }
 
 /* ───────────────────────────── 一覧 (Reference) ───────────────────────────── */
-function Reference({ stats, speakZ }) {
-  const [sel, setSel] = useState(null); // selected consonant or vowel
+function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => void }) {
+  const [sel, setSel] = useState<Item | null>(null);
   const colTemplate = `74px repeat(${MANNERS.length}, minmax(56px,1fr))`;
-  const tap = (item) => {
+  const tap = (item: Item) => {
     setSel((prev) => (prev && prev.z === item.z ? null : item));
     speakZ(item.z);
   };
@@ -489,12 +493,16 @@ function Reference({ stats, speakZ }) {
 }
 
 /* ───────────────────────────── フラッシュカード ───────────────────────────── */
-function Flashcards({ stats, bump, speakZ }) {
+function Flashcards({ stats, bump, speakZ }: {
+  stats: Stats;
+  bump: (z: string, ok: boolean) => void;
+  speakZ: (z: string) => void;
+}) {
   const [dir, setDir] = useState("z2p"); // z2p | p2z | classify
   const [scope, setScope] = useState("consonant"); // consonant | vowel | all
   const [flipped, setFlipped] = useState(false);
   const [session, setSession] = useState({ yes: 0, no: 0 });
-  const [current, setCurrent] = useState(null);
+  const [current, setCurrent] = useState<Item | null>(null);
 
   const reveal = () => {
     setFlipped((f) => {
@@ -511,7 +519,7 @@ function Flashcards({ stats, bump, speakZ }) {
 
   // 弱いカードを重み付けで選ぶ（SRS-lite）
   const pick = useCallback(() => {
-    const weighted = [];
+    const weighted: Item[] = [];
     pool.forEach((item) => {
       const s = stats[item.z] || { seen: 0, correct: 0 };
       const rate = s.seen ? s.correct / s.seen : 0;
@@ -541,7 +549,8 @@ function Flashcards({ stats, bump, speakZ }) {
     setFlipped(false);
   };
 
-  const grade = (ok) => {
+  const grade = (ok: boolean) => {
+    if (!current) return;
     bump(current.z, ok);
     setSession((s) => ({ yes: s.yes + (ok ? 1 : 0), no: s.no + (ok ? 0 : 1) }));
     next();
@@ -553,7 +562,7 @@ function Flashcards({ stats, bump, speakZ }) {
   const acc = total ? Math.round((session.yes / total) * 100) : 0;
 
   // 表面・裏面の内容
-  let front, frontKind, hint, back;
+  let front: string, frontKind: string, hint: string, back: React.ReactNode;
   if (dir === "z2p") {
     front = current.z; frontKind = "zhuyin"; hint = "ピンインは？";
     back = (
@@ -567,11 +576,11 @@ function Flashcards({ stats, bump, speakZ }) {
     hint = isConsonant ? "調音位置と方法は？" : "ピンイン（母音）は？";
     back = isConsonant ? (
       <div className="ans">
-        {current.place} ／ {current.manner}
+        {(current as Consonant).place} ／ {(current as Consonant).manner}
         <span className="pinyin" style={{ fontSize: 26, marginTop: 6 }}>{current.p}</span>
       </div>
     ) : (
-      <div className="ans">{current.group}<span className="pinyin" style={{ fontSize: 26, marginTop: 6 }}>{current.p}</span></div>
+      <div className="ans">{(current as Vowel).group}<span className="pinyin" style={{ fontSize: 26, marginTop: 6 }}>{current.p}</span></div>
     );
   }
 
@@ -590,7 +599,7 @@ function Flashcards({ stats, bump, speakZ }) {
               aria-pressed={dir === v}
               onClick={() => setDir(v)}
               disabled={v === "classify" && scope === "vowel"}
-              style={v === "classify" && scope === "vowel" ? { opacity: 0.4 } : null}
+              style={v === "classify" && scope === "vowel" ? { opacity: 0.4 } : undefined}
             >{l}</button>
           ))}
         </div>
@@ -617,12 +626,12 @@ function Flashcards({ stats, bump, speakZ }) {
             >🔊 もう一度</button>
             {isConsonant ? (
               <div className="tipline">
-                {PLACE_TIPS[current.place]}<br />
-                {MANNER_TIPS[current.manner]}
+                {PLACE_TIPS[(current as Consonant).place]}<br />
+                {MANNER_TIPS[(current as Consonant).manner]}
               </div>
             ) : (
               <div className="tipline">
-                {VOWEL_TIPS[current.z] || VOWEL_GROUP_TIPS[current.group]}
+                {VOWEL_TIPS[current.z] || VOWEL_GROUP_TIPS[(current as Vowel).group]}
               </div>
             )}
           </>
@@ -647,14 +656,14 @@ function Flashcards({ stats, bump, speakZ }) {
 }
 
 /* ───────────────────────────── チャート埋め ───────────────────────────── */
-function FillChart({ bump }) {
-  const [vals, setVals] = useState({});
+function FillChart({ bump }: { bump: (z: string, ok: boolean) => void }) {
+  const [vals, setVals] = useState<Record<string, string>>({});
   const [checked, setChecked] = useState(false);
   const colTemplate = `74px repeat(${MANNERS.length}, minmax(56px,1fr))`;
 
   const reset = () => { setVals({}); setChecked(false); };
 
-  const norm = (s) => (s || "").trim().toLowerCase();
+  const norm = (s: string | undefined) => (s || "").trim().toLowerCase();
 
   const check = () => {
     setChecked(true);
@@ -721,15 +730,15 @@ function FillChart({ bump }) {
 /* ───────────────────────────── ルート ───────────────────────────── */
 export default function BopomofoTrainer() {
   const [tab, setTab] = useState("ref");
-  const [stats, setStats] = useState({});
+  const [stats, setStats] = useState<Stats>({});
   const [muted, setMuted] = useState(false);
-  const statsRef = useRef(stats);
+  const statsRef = useRef<Stats>(stats);
   statsRef.current = stats;
   const { speakZ, supported } = useSpeech(muted);
 
   useEffect(() => { void safeStorage.load().then(setStats); }, []);
 
-  const bump = useCallback((z, ok) => {
+  const bump = useCallback((z: string, ok: boolean) => {
     setStats((prev) => {
       const cur = prev[z] || { seen: 0, correct: 0 };
       const nextStats = { ...prev, [z]: { seen: cur.seen + 1, correct: cur.correct + (ok ? 1 : 0) } };
