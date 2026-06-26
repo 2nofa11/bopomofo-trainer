@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite-plus'
+import { defineConfig, type Plugin } from 'vite-plus'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import babel from '@rolldown/plugin-babel'
 
@@ -22,12 +22,12 @@ export default defineConfig({
     },
     "options": {
       "typeAware": true,
-      "typeCheck": false
+      "typeCheck": true
     }
   },
   base: '/bopomofo-trainer/',
   plugins: [
-    react(),
-    babel({ presets: [reactCompilerPreset()] })
+    ...(react() as Plugin[]),
+    babel({ presets: [reactCompilerPreset()] }) as unknown as Plugin,
   ],
 })
