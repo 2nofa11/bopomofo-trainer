@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 
-type Consonant = { z: string; p: string; place: string; manner: string }
-type Vowel    = { z: string; p: string; group: string }
-type Item     = Consonant | Vowel
-type Stats    = Record<string, { seen: number; correct: number }>
+type Consonant = { z: string; p: string; place: string; manner: string };
+type Vowel = { z: string; p: string; group: string };
+type Item = Consonant | Vowel;
+type Stats = Record<string, { seen: number; correct: number }>;
 
 /* ───────────────────────────── データ ─────────────────────────────
    出典: 「ボポモフォと発音のコツ.pdf」(モーガンの台湾中国語講座 / Morgan Mandarin)
@@ -63,8 +63,7 @@ const PLACE_TIPS: Record<string, string> = {
   舌尖音: "舌先を上の歯茎につけて発音します。",
   舌根音: "舌の付け根を奥に下げて発音します。",
   舌面音: "上下の前歯を軽く閉じ、舌先を下の歯茎につけたまま発音します。",
-  そり舌音:
-    "舌の平面が上下のあごに触れないように、舌先が起立している状態で、やや後ろに引っ込めながら、側面を軽く上の奥歯に押し付けて発音します。",
+  そり舌音: "舌の平面が上下のあごに触れないように、舌先が起立している状態で、やや後ろに引っ込めながら、側面を軽く上の奥歯に押し付けて発音します。",
   舌歯音: "舌先を前歯の裏側に押しつけて発音します。",
 };
 
@@ -109,21 +108,49 @@ const VOWEL_TIPS: Record<string, string> = {
    ローマ字を中国語音声に渡すと誤読するため、漢字で読ませる。
    子音は単独発音できないので、注音の暗唱どおり既定母音つきの音にする(ㄅ→波 bo 等)。 */
 const SAY: Record<string, string> = {
-  ㄅ: "波", ㄆ: "坡", ㄇ: "摸", ㄈ: "佛",
-  ㄉ: "德", ㄊ: "特", ㄋ: "呢", ㄌ: "勒",
-  ㄍ: "哥", ㄎ: "科", ㄏ: "喝",
-  ㄐ: "雞", ㄑ: "七", ㄒ: "西",
-  ㄓ: "知", ㄔ: "吃", ㄕ: "詩", ㄖ: "日",
-  ㄗ: "資", ㄘ: "詞", ㄙ: "思",
-  ㄧ: "一", ㄨ: "烏", ㄩ: "魚",
-  ㄚ: "啊", ㄛ: "喔", ㄜ: "鵝", ㄝ: "欸",
-  ㄞ: "愛", ㄟ: "誒", ㄠ: "奧", ㄡ: "歐",
-  ㄢ: "安", ㄣ: "恩", ㄤ: "昂", ㄥ: "鞥",
+  ㄅ: "波",
+  ㄆ: "坡",
+  ㄇ: "摸",
+  ㄈ: "佛",
+  ㄉ: "德",
+  ㄊ: "特",
+  ㄋ: "呢",
+  ㄌ: "勒",
+  ㄍ: "哥",
+  ㄎ: "科",
+  ㄏ: "喝",
+  ㄐ: "雞",
+  ㄑ: "七",
+  ㄒ: "西",
+  ㄓ: "知",
+  ㄔ: "吃",
+  ㄕ: "詩",
+  ㄖ: "日",
+  ㄗ: "資",
+  ㄘ: "詞",
+  ㄙ: "思",
+  ㄧ: "一",
+  ㄨ: "烏",
+  ㄩ: "魚",
+  ㄚ: "啊",
+  ㄛ: "喔",
+  ㄜ: "鵝",
+  ㄝ: "欸",
+  ㄞ: "愛",
+  ㄟ: "誒",
+  ㄠ: "奧",
+  ㄡ: "歐",
+  ㄢ: "安",
+  ㄣ: "恩",
+  ㄤ: "昂",
+  ㄥ: "鞥",
   ㄦ: "兒",
 };
 
 const ALL = [...CONSONANTS, ...VOWELS];
-const byZ: Record<string, Consonant> = Object.fromEntries(CONSONANTS.map((c) => [`${c.place}|${c.manner}`, c]));
+const byZ: Record<string, Consonant> = Object.fromEntries(
+  CONSONANTS.map((c) => [`${c.place}|${c.manner}`, c]),
+);
 
 /* ───────────────────────── 永続ストレージ ─────────────────────────
    localStorage を使って学習記録をセッション横断で保存する。
@@ -349,8 +376,7 @@ const masteryColor = (s: Stats[string] | undefined) => {
 /* 台湾華語(zh-TW)優先で発音する。漢字を渡すことで正しい音にする。 */
 function useSpeech(muted: boolean) {
   const voiceRef = useRef<SpeechSynthesisVoice | null>(null);
-  const supported =
-    typeof window !== "undefined" && "speechSynthesis" in window;
+  const supported = typeof window !== "undefined" && "speechSynthesis" in window;
 
   useEffect(() => {
     if (!supported) return;
@@ -364,8 +390,7 @@ function useSpeech(muted: boolean) {
     };
     load();
     window.speechSynthesis.addEventListener("voiceschanged", load);
-    return () =>
-      window.speechSynthesis.removeEventListener("voiceschanged", load);
+    return () => window.speechSynthesis.removeEventListener("voiceschanged", load);
   }, [supported]);
 
   const speakZ = useCallback(
@@ -384,7 +409,7 @@ function useSpeech(muted: boolean) {
         /* 音声非対応でも学習は続行 */
       }
     },
-    [muted, supported]
+    [muted, supported],
   );
 
   return { speakZ, supported };
@@ -401,7 +426,7 @@ function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => voi
 
   return (
     <div className="card">
-      <p className="secttl">子音  — 調音位置 × 調音方法</p>
+      <p className="secttl">子音 — 調音位置 × 調音方法</p>
       <div className="grid" style={{ gridTemplateColumns: colTemplate }}>
         <div className="gh corner" />
         {MANNERS.map((m) => (
@@ -416,7 +441,12 @@ function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => voi
             </div>
             {MANNERS.map((manner) => {
               const c = byZ[`${place}|${manner}`];
-              if (!c) return <div key={manner} className="void">·</div>;
+              if (!c)
+                return (
+                  <div key={manner} className="void">
+                    ·
+                  </div>
+                );
               const mc = masteryColor(stats[c.z]);
               const isSel = sel && sel.z === c.z;
               return (
@@ -440,9 +470,20 @@ function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => voi
       {sel ? (
         <div className="detail">
           <div className="big">{sel.z}</div>
-          <div className="row" style={{ fontSize: 20, fontWeight: 700, display: "flex", alignItems: "center", gap: 10 }}>
+          <div
+            className="row"
+            style={{
+              fontSize: 20,
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
             ピンイン <b>{sel.p}</b>
-            <button className="spk" onClick={() => speakZ(sel.z)} aria-label="もう一度再生">🔊</button>
+            <button className="spk" onClick={() => speakZ(sel.z)} aria-label="もう一度再生">
+              🔊
+            </button>
           </div>
           {"place" in sel ? (
             <>
@@ -455,16 +496,22 @@ function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => voi
             </>
           ) : (
             <>
-              <div className="row"><b>{sel.group}</b></div>
+              <div className="row">
+                <b>{sel.group}</b>
+              </div>
               <div className="row">{VOWEL_TIPS[sel.z] || VOWEL_GROUP_TIPS[sel.group]}</div>
             </>
           )}
         </div>
       ) : (
-        <div className="detail placeholder">タイルをタップすると、ピンインと発音のコツが出ます。右上の点は習熟度（カード学習の正答率）です。</div>
+        <div className="detail placeholder">
+          タイルをタップすると、ピンインと発音のコツが出ます。右上の点は習熟度（カード学習の正答率）です。
+        </div>
       )}
 
-      <p className="secttl" style={{ marginTop: 26 }}>母音</p>
+      <p className="secttl" style={{ marginTop: 26 }}>
+        母音
+      </p>
       <div className="vgrid">
         {["介音", "単母音", "複母音", "鼻母音", "そり舌母音"].map((g) => (
           <React.Fragment key={g}>
@@ -473,11 +520,7 @@ function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => voi
               const mc = masteryColor(stats[v.z]);
               return (
                 <div className="tilewrap" key={v.z}>
-                  <button
-                    className="tile"
-                    onClick={() => tap(v)}
-                    aria-label={`${v.z} ${v.p}`}
-                  >
+                  <button className="tile" onClick={() => tap(v)} aria-label={`${v.z} ${v.p}`}>
                     <span className="z">{v.z}</span>
                     <span className="p">{v.p}</span>
                   </button>
@@ -493,7 +536,11 @@ function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => voi
 }
 
 /* ───────────────────────────── フラッシュカード ───────────────────────────── */
-function Flashcards({ stats, bump, speakZ }: {
+function Flashcards({
+  stats,
+  bump,
+  speakZ,
+}: {
   stats: Stats;
   bump: (z: string, ok: boolean) => void;
   speakZ: (z: string) => void;
@@ -564,23 +611,41 @@ function Flashcards({ stats, bump, speakZ }: {
   // 表面・裏面の内容
   let front: string, frontKind: string, hint: string, back: React.ReactNode;
   if (dir === "z2p") {
-    front = current.z; frontKind = "zhuyin"; hint = "ピンインは？";
+    front = current.z;
+    frontKind = "zhuyin";
+    hint = "ピンインは？";
     back = (
-      <div className="ans"><span className="pinyin">{current.p}</span></div>
+      <div className="ans">
+        <span className="pinyin">{current.p}</span>
+      </div>
     );
   } else if (dir === "p2z") {
-    front = current.p; frontKind = "text"; hint = "注音符号は？";
-    back = <div className="ans"><span className="pinyin">{current.z}</span></div>;
+    front = current.p;
+    frontKind = "text";
+    hint = "注音符号は？";
+    back = (
+      <div className="ans">
+        <span className="pinyin">{current.z}</span>
+      </div>
+    );
   } else {
-    front = current.z; frontKind = "zhuyin";
+    front = current.z;
+    frontKind = "zhuyin";
     hint = isConsonant ? "調音位置と方法は？" : "ピンイン（母音）は？";
     back = isConsonant ? (
       <div className="ans">
         {(current as Consonant).place} ／ {(current as Consonant).manner}
-        <span className="pinyin" style={{ fontSize: 26, marginTop: 6 }}>{current.p}</span>
+        <span className="pinyin" style={{ fontSize: 26, marginTop: 6 }}>
+          {current.p}
+        </span>
       </div>
     ) : (
-      <div className="ans">{(current as Vowel).group}<span className="pinyin" style={{ fontSize: 26, marginTop: 6 }}>{current.p}</span></div>
+      <div className="ans">
+        {(current as Vowel).group}
+        <span className="pinyin" style={{ fontSize: 26, marginTop: 6 }}>
+          {current.p}
+        </span>
+      </div>
     );
   }
 
@@ -588,19 +653,31 @@ function Flashcards({ stats, bump, speakZ }: {
     <div className="card">
       <div className="controls">
         <div className="seg" role="group" aria-label="出題範囲">
-          {[["consonant", "子音"], ["vowel", "母音"], ["all", "すべて"]].map(([v, l]) => (
-            <button key={v} aria-pressed={scope === v} onClick={() => setScope(v)}>{l}</button>
+          {[
+            ["consonant", "子音"],
+            ["vowel", "母音"],
+            ["all", "すべて"],
+          ].map(([v, l]) => (
+            <button key={v} aria-pressed={scope === v} onClick={() => setScope(v)}>
+              {l}
+            </button>
           ))}
         </div>
         <div className="seg" role="group" aria-label="出題形式">
-          {[["z2p", "注音→ピンイン"], ["p2z", "ピンイン→注音"], ["classify", "分類"]].map(([v, l]) => (
+          {[
+            ["z2p", "注音→ピンイン"],
+            ["p2z", "ピンイン→注音"],
+            ["classify", "分類"],
+          ].map(([v, l]) => (
             <button
               key={v}
               aria-pressed={dir === v}
               onClick={() => setDir(v)}
               disabled={v === "classify" && scope === "vowel"}
               style={v === "classify" && scope === "vowel" ? { opacity: 0.4 } : undefined}
-            >{l}</button>
+            >
+              {l}
+            </button>
           ))}
         </div>
       </div>
@@ -610,7 +687,12 @@ function Flashcards({ stats, bump, speakZ }: {
         role="button"
         tabIndex={0}
         onClick={reveal}
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); reveal(); } }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            reveal();
+          }
+        }}
         aria-label="カード。タップで答えを表示"
       >
         <div className={`q ${frontKind}`}>{front}</div>
@@ -621,12 +703,18 @@ function Flashcards({ stats, bump, speakZ }: {
             {back}
             <button
               className="spk"
-              onClick={(e) => { e.stopPropagation(); speakZ(current.z); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                speakZ(current.z);
+              }}
               aria-label="もう一度再生"
-            >🔊 もう一度</button>
+            >
+              🔊 もう一度
+            </button>
             {isConsonant ? (
               <div className="tipline">
-                {PLACE_TIPS[(current as Consonant).place]}<br />
+                {PLACE_TIPS[(current as Consonant).place]}
+                <br />
                 {MANNER_TIPS[(current as Consonant).manner]}
               </div>
             ) : (
@@ -640,8 +728,12 @@ function Flashcards({ stats, bump, speakZ }: {
 
       {flipped && (
         <div className="grades">
-          <button className="grade no" onClick={() => grade(false)}>× もう一度</button>
-          <button className="grade yes" onClick={() => grade(true)}>○ できた</button>
+          <button className="grade no" onClick={() => grade(false)}>
+            × もう一度
+          </button>
+          <button className="grade yes" onClick={() => grade(true)}>
+            ○ できた
+          </button>
         </div>
       )}
 
@@ -661,7 +753,10 @@ function FillChart({ bump }: { bump: (z: string, ok: boolean) => void }) {
   const [checked, setChecked] = useState(false);
   const colTemplate = `74px repeat(${MANNERS.length}, minmax(56px,1fr))`;
 
-  const reset = () => { setVals({}); setChecked(false); };
+  const reset = () => {
+    setVals({});
+    setChecked(false);
+  };
 
   const norm = (s: string | undefined) => (s || "").trim().toLowerCase();
 
@@ -681,13 +776,22 @@ function FillChart({ bump }: { bump: (z: string, ok: boolean) => void }) {
       <p className="secttl">空欄にピンインを入力 — 子音マトリクスを思い出す</p>
       <div className="fillgrid" style={{ gridTemplateColumns: colTemplate }}>
         <div className="gh corner" />
-        {MANNERS.map((m) => (<div key={m} className="gh">{m}</div>))}
+        {MANNERS.map((m) => (
+          <div key={m} className="gh">
+            {m}
+          </div>
+        ))}
         {PLACES.map((place) => (
           <React.Fragment key={place}>
             <div className="gh rh">{place}</div>
             {MANNERS.map((manner) => {
               const c = byZ[`${place}|${manner}`];
-              if (!c) return <div key={manner} className="void">·</div>;
+              if (!c)
+                return (
+                  <div key={manner} className="void">
+                    ·
+                  </div>
+                );
               const ok = norm(vals[c.z]) === c.p;
               return (
                 <div className="gcell" key={manner}>
@@ -698,7 +802,9 @@ function FillChart({ bump }: { bump: (z: string, ok: boolean) => void }) {
                     disabled={checked}
                     onChange={(e) => setVals((v) => ({ ...v, [c.z]: e.target.value }))}
                     aria-label={`${c.z} のピンイン`}
-                    autoCapitalize="off" autoCorrect="off" spellCheck={false}
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    spellCheck={false}
                   />
                   <div className="fillzhuyin">{c.z}</div>
                 </div>
@@ -710,18 +816,24 @@ function FillChart({ bump }: { bump: (z: string, ok: boolean) => void }) {
 
       <div className="actions">
         {!checked ? (
-          <button className="btn" onClick={check}>答え合わせ</button>
+          <button className="btn" onClick={check}>
+            答え合わせ
+          </button>
         ) : (
           <>
             <span className={`score ${pct === 100 ? "good" : pct >= 70 ? "mid" : ""}`}>
               {correctCount} / {CONSONANTS.length}（{pct}%）
             </span>
-            <button className="btn ghost" onClick={reset}>もう一度</button>
+            <button className="btn ghost" onClick={reset}>
+              もう一度
+            </button>
           </>
         )}
       </div>
       {checked && pct < 100 && (
-        <div className="bar"><span style={{ width: `${pct}%` }} /></div>
+        <div className="bar">
+          <span style={{ width: `${pct}%` }} />
+        </div>
       )}
     </div>
   );
@@ -736,12 +848,17 @@ export default function BopomofoTrainer() {
   statsRef.current = stats;
   const { speakZ, supported } = useSpeech(muted);
 
-  useEffect(() => { void safeStorage.load().then(setStats); }, []);
+  useEffect(() => {
+    void safeStorage.load().then(setStats);
+  }, []);
 
   const bump = useCallback((z: string, ok: boolean) => {
     setStats((prev) => {
       const cur = prev[z] || { seen: 0, correct: 0 };
-      const nextStats = { ...prev, [z]: { seen: cur.seen + 1, correct: cur.correct + (ok ? 1 : 0) } };
+      const nextStats = {
+        ...prev,
+        [z]: { seen: cur.seen + 1, correct: cur.correct + (ok ? 1 : 0) },
+      };
       void safeStorage.save(nextStats);
       return nextStats;
     });
@@ -777,17 +894,31 @@ export default function BopomofoTrainer() {
         <p className="lede">
           注音符号と発音のコツを覚えるためのアプリ。子音は「調音位置×調音方法」の表で、
           位置と方法のヒントから音を引き出せるように練習します。タイルやカードを押すと
-          台湾華語（zh-TW）で発音が鳴ります。学習記録は端末に保存されます（記録済み {learned} / {ALL.length} 音）。
+          台湾華語（zh-TW）で発音が鳴ります。学習記録は端末に保存されます（記録済み {learned} /{" "}
+          {ALL.length} 音）。
         </p>
         {!supported && (
           <p className="lede" style={{ color: "var(--coral)" }}>
-            ※ このブラウザは音声合成に未対応のため、発音は再生されません（Safari/Chrome最新版を推奨）。
+            ※
+            このブラウザは音声合成に未対応のため、発音は再生されません（Safari/Chrome最新版を推奨）。
           </p>
         )}
 
         <div className="tabs" role="tablist">
-          {[["ref", "一覧"], ["cards", "フラッシュカード"], ["fill", "チャート埋め"]].map(([v, l]) => (
-            <button key={v} role="tab" aria-selected={tab === v} className="tab" onClick={() => setTab(v)}>{l}</button>
+          {[
+            ["ref", "一覧"],
+            ["cards", "フラッシュカード"],
+            ["fill", "チャート埋め"],
+          ].map(([v, l]) => (
+            <button
+              key={v}
+              role="tab"
+              aria-selected={tab === v}
+              className="tab"
+              onClick={() => setTab(v)}
+            >
+              {l}
+            </button>
           ))}
         </div>
 
@@ -796,9 +927,12 @@ export default function BopomofoTrainer() {
         {tab === "fill" && <FillChart bump={bump} />}
 
         <p className="foot">
-          出典：「ボポモフォと発音のコツ」（モーガンの台湾中国語講座 / Morgan Mandarin）<br />
+          出典：「ボポモフォと発音のコツ」（モーガンの台湾中国語講座 / Morgan Mandarin）
+          <br />
           発音の音声は元動画チャンネルで確認できます。 ·{" "}
-          <button className="reset" onClick={resetAll}>学習記録をリセット</button>
+          <button className="reset" onClick={resetAll}>
+            学習記録をリセット
+          </button>
         </p>
       </div>
     </div>
