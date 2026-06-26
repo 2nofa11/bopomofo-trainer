@@ -190,11 +190,11 @@ const CSS = `
   --teal:#1E8A86; --teal-d:#16635F; --teal-soft:#D7ECE8;
   --amber:#F2B705; --amber-d:#C98F00;
   --coral:#DD6149; --moss:#5C9A6B; --line:#E0D8C4;
-  --void:#EFE9D8;
+  --void:#EFE9D8; --rowhead:74px; --colmin:56px;
   font-family:"Zen Kaku Gothic New",system-ui,-apple-system,sans-serif;
   color:var(--ink); background:var(--paper);
   min-height:100vh; padding:clamp(14px,3vw,34px);
-  -webkit-font-smoothing:antialiased; box-sizing:border-box;
+  -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%; box-sizing:border-box;
 }
 .bpmf *{box-sizing:border-box;}
 .bpmf .wrap{max-width:980px;margin:0 auto;}
@@ -215,7 +215,7 @@ const CSS = `
 .bpmf .tab{
   font-family:"Zen Maru Gothic",sans-serif;font-weight:700;font-size:15px;
   border:2px solid var(--ink);background:var(--paper2);color:var(--ink);
-  padding:9px 16px;border-radius:12px;cursor:pointer;
+  padding:9px 16px;border-radius:12px;cursor:pointer;touch-action:manipulation;
   box-shadow:2px 3px 0 var(--ink);transition:transform .08s,box-shadow .08s,background .15s;
 }
 .bpmf .tab:hover{transform:translate(-1px,-1px);box-shadow:3px 4px 0 var(--ink);}
@@ -232,17 +232,18 @@ const CSS = `
   box-shadow:1px 2px 0 var(--amber-d);}
 
 /* マトリクス */
-.bpmf .grid{display:grid;gap:6px;overflow-x:auto;padding-bottom:4px;}
+.bpmf .grid{display:grid;gap:6px;overflow-x:auto;padding-bottom:4px;
+  grid-template-columns:var(--rowhead) repeat(var(--mcount,5),minmax(var(--colmin),1fr));}
 .bpmf .gcell{min-width:0;}
 .bpmf .gh{font-family:"Zen Maru Gothic",sans-serif;font-weight:700;font-size:12.5px;
   background:var(--teal-soft);color:var(--teal-d);border-radius:9px;
   display:flex;align-items:center;justify-content:center;text-align:center;
   padding:7px 4px;min-height:38px;cursor:help;}
-.bpmf .gh.rh{background:#F5E7C9;color:#8a6a00;}
-.bpmf .corner{background:transparent;}
+.bpmf .gh.rh{background:#F5E7C9;color:#8a6a00;position:sticky;left:0;z-index:1;}
+.bpmf .corner{background:var(--paper2);position:sticky;left:0;z-index:1;}
 
 .bpmf .tile{
-  border:none;width:100%;min-height:54px;border-radius:12px;cursor:pointer;
+  border:none;width:100%;min-height:54px;border-radius:12px;cursor:pointer;touch-action:manipulation;
   font-family:"Zen Maru Gothic",sans-serif;display:flex;flex-direction:column;
   align-items:center;justify-content:center;gap:1px;padding:6px 2px;
   background:var(--paper);box-shadow:2px 3px 0 rgba(0,0,0,.10);
@@ -282,13 +283,13 @@ const CSS = `
 .bpmf .controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center;}
 .bpmf .seg{display:inline-flex;border:2px solid var(--ink);border-radius:11px;overflow:hidden;box-shadow:2px 3px 0 var(--ink);}
 .bpmf .seg button{font-family:"Zen Kaku Gothic New";font-weight:700;font-size:13px;border:none;
-  background:var(--paper2);color:var(--ink);padding:7px 12px;cursor:pointer;}
+  background:var(--paper2);color:var(--ink);padding:7px 12px;cursor:pointer;touch-action:manipulation;}
 .bpmf .seg button + button{border-left:2px solid var(--ink);}
 .bpmf .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper2);}
 .bpmf .seg button:focus-visible{outline:3px solid var(--amber);outline-offset:-1px;}
 
 .bpmf .flash{background:var(--paper2);border-radius:22px;border:2px solid var(--ink);
-  box-shadow:4px 6px 0 var(--ink);padding:40px 20px;text-align:center;cursor:pointer;
+  box-shadow:4px 6px 0 var(--ink);padding:40px 20px;text-align:center;cursor:pointer;touch-action:manipulation;
   min-height:230px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
   user-select:none;transition:transform .08s;}
 .bpmf .flash:active{transform:translate(2px,3px);}
@@ -303,7 +304,7 @@ const CSS = `
 
 .bpmf .grades{display:flex;gap:10px;justify-content:center;margin-top:16px;}
 .bpmf .grade{font-family:"Zen Maru Gothic",sans-serif;font-weight:700;font-size:15px;border:2px solid var(--ink);
-  padding:10px 22px;border-radius:12px;cursor:pointer;box-shadow:2px 3px 0 var(--ink);background:var(--paper2);}
+  padding:10px 22px;border-radius:12px;cursor:pointer;touch-action:manipulation;box-shadow:2px 3px 0 var(--ink);background:var(--paper2);}
 .bpmf .grade:active{transform:translate(1px,2px);box-shadow:1px 1px 0 var(--ink);}
 .bpmf .grade:focus-visible{outline:3px solid var(--amber);outline-offset:2px;}
 .bpmf .grade.no{color:var(--coral);} .bpmf .grade.yes{color:var(--moss);}
@@ -316,7 +317,8 @@ const CSS = `
 .bpmf .bar > span{display:block;height:100%;background:var(--teal);transition:width .3s;}
 
 /* チャート埋め */
-.bpmf .fillgrid{display:grid;gap:6px;overflow-x:auto;padding-bottom:4px;}
+.bpmf .fillgrid{display:grid;gap:6px;overflow-x:auto;padding-bottom:4px;
+  grid-template-columns:var(--rowhead) repeat(var(--mcount,5),minmax(var(--colmin),1fr));}
 .bpmf input.fc{width:100%;min-height:54px;border-radius:12px;border:2px solid var(--line);
   background:#fff;text-align:center;font-size:18px;font-family:"Zen Maru Gothic";font-weight:700;
   color:var(--ink);box-shadow:2px 3px 0 rgba(0,0,0,.06);padding:2px;}
@@ -328,7 +330,7 @@ const CSS = `
 .bpmf .fillzhuyin{font-size:11px;color:var(--sub);text-align:center;margin-top:2px;font-weight:700;}
 
 .bpmf .btn{font-family:"Zen Maru Gothic";font-weight:700;font-size:15px;border:2px solid var(--ink);
-  background:var(--amber);color:var(--ink);padding:10px 22px;border-radius:12px;cursor:pointer;
+  background:var(--amber);color:var(--ink);padding:10px 22px;border-radius:12px;cursor:pointer;touch-action:manipulation;
   box-shadow:2px 3px 0 var(--ink);}
 .bpmf .btn:active{transform:translate(1px,2px);box-shadow:1px 1px 0 var(--ink);}
 .bpmf .btn:focus-visible{outline:3px solid var(--teal);outline-offset:2px;}
@@ -339,24 +341,30 @@ const CSS = `
 
 .bpmf .foot{margin-top:22px;font-size:11.5px;color:var(--sub);line-height:1.7;text-align:center;}
 .bpmf .foot a{color:var(--teal-d);}
-.bpmf .reset{background:none;border:none;color:var(--sub);text-decoration:underline;cursor:pointer;font-size:11.5px;}
+.bpmf .reset{background:none;border:none;color:var(--sub);text-decoration:underline;cursor:pointer;font-size:11.5px;touch-action:manipulation;}
 
 .bpmf .mute{margin-left:auto;font-family:"Zen Kaku Gothic New";font-weight:700;font-size:12.5px;
   border:2px solid var(--ink);background:var(--paper2);color:var(--ink);padding:6px 11px;border-radius:10px;
-  cursor:pointer;box-shadow:2px 3px 0 var(--ink);}
+  cursor:pointer;touch-action:manipulation;box-shadow:2px 3px 0 var(--ink);}
 .bpmf .mute:active{transform:translate(1px,2px);box-shadow:1px 1px 0 var(--ink);}
 .bpmf .mute[aria-pressed="true"]{background:var(--void);color:var(--sub);}
 .bpmf .mute:focus-visible{outline:3px solid var(--amber);outline-offset:2px;}
 
 .bpmf .spk{font-family:"Zen Kaku Gothic New";font-weight:700;font-size:13px;border:2px solid #fff;
-  background:rgba(255,255,255,.16);color:#fff;padding:4px 10px;border-radius:9px;cursor:pointer;}
+  background:rgba(255,255,255,.16);color:#fff;padding:4px 10px;border-radius:9px;cursor:pointer;touch-action:manipulation;}
 .bpmf .flash .spk{border-color:var(--teal);background:var(--teal-soft);color:var(--teal-d);margin-top:8px;}
 .bpmf .spk:active{transform:translate(1px,1px);}
 .bpmf .spk:focus-visible{outline:3px solid var(--amber);outline-offset:2px;}
 
 @media (max-width:560px){
+  .bpmf{--rowhead:52px;--colmin:44px;}
   .bpmf .flash .q.zhuyin{font-size:74px;}
   .bpmf .vgrid{grid-template-columns:repeat(3,1fr);}
+  .bpmf .gh{font-size:11px;padding:6px 3px;min-height:34px;}
+  .bpmf .tile .z{font-size:19px;}
+  .bpmf .tile .p{font-size:11px;}
+  .bpmf .tile,.bpmf .void,.bpmf input.fc{min-height:48px;}
+  .bpmf input.fc{font-size:16px;}
 }
 @media (prefers-reduced-motion:reduce){
   .bpmf *{transition:none !important;}
@@ -418,7 +426,6 @@ function useSpeech(muted: boolean) {
 /* ───────────────────────────── 一覧 (Reference) ───────────────────────────── */
 function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => void }) {
   const [sel, setSel] = useState<Item | null>(null);
-  const colTemplate = `74px repeat(${MANNERS.length}, minmax(56px,1fr))`;
   const tap = (item: Item) => {
     setSel((prev) => (prev && prev.z === item.z ? null : item));
     speakZ(item.z);
@@ -427,7 +434,7 @@ function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => voi
   return (
     <div className="card">
       <p className="secttl">子音 — 調音位置 × 調音方法</p>
-      <div className="grid" style={{ gridTemplateColumns: colTemplate }}>
+      <div className="grid" style={{ "--mcount": MANNERS.length } as React.CSSProperties}>
         <div className="gh corner" />
         {MANNERS.map((m) => (
           <div key={m} className="gh" title={MANNER_TIPS[m]}>
@@ -751,7 +758,6 @@ function Flashcards({
 function FillChart({ bump }: { bump: (z: string, ok: boolean) => void }) {
   const [vals, setVals] = useState<Record<string, string>>({});
   const [checked, setChecked] = useState(false);
-  const colTemplate = `74px repeat(${MANNERS.length}, minmax(56px,1fr))`;
 
   const reset = () => {
     setVals({});
@@ -774,7 +780,7 @@ function FillChart({ bump }: { bump: (z: string, ok: boolean) => void }) {
   return (
     <div className="card">
       <p className="secttl">空欄にピンインを入力 — 子音マトリクスを思い出す</p>
-      <div className="fillgrid" style={{ gridTemplateColumns: colTemplate }}>
+      <div className="fillgrid" style={{ "--mcount": MANNERS.length } as React.CSSProperties}>
         <div className="gh corner" />
         {MANNERS.map((m) => (
           <div key={m} className="gh">
