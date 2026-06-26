@@ -166,7 +166,7 @@ const EXAMPLE: Record<string, { word: string; gloss: string; zhuyin: string; pin
   ㄔ: { word: "茶", gloss: "おちゃ", zhuyin: "ㄔㄚˊ", pinyin: "chá" },
   ㄕ: { word: "書", gloss: "ほん", zhuyin: "ㄕㄨ", pinyin: "shū" },
   ㄖ: { word: "肉", gloss: "にく", zhuyin: "ㄖㄡˋ", pinyin: "ròu" },
-  ㄗ: { word: "嘴巴", gloss: "くち", zhuyin: "ㄗㄨㄟˇ ㄅㄚ˙", pinyin: "zuǐ ba" },
+  ㄗ: { word: "孩子", gloss: "こども", zhuyin: "ㄏㄞˊ ㄗ˙", pinyin: "hái zi" },
   ㄘ: { word: "草", gloss: "くさ", zhuyin: "ㄘㄠˇ", pinyin: "cǎo" },
   ㄙ: { word: "傘", gloss: "かさ", zhuyin: "ㄙㄢˇ", pinyin: "sǎn" },
   ㄧ: { word: "衣服", gloss: "ふく", zhuyin: "ㄧ ㄈㄨ˙", pinyin: "yī fu" },
