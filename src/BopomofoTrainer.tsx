@@ -193,7 +193,7 @@ const CSS = `
   --void:#EFE9D8; --rowhead:74px; --colmin:56px;
   font-family:"Zen Kaku Gothic New",system-ui,-apple-system,sans-serif;
   color:var(--ink); background:var(--paper);
-  min-height:100vh; padding:clamp(14px,3vw,34px); padding-bottom:calc(clamp(14px,3vw,34px) + 100px);
+  min-height:100vh; padding:clamp(14px,3vw,34px); padding-bottom:calc(clamp(14px,3vw,34px) + 60px);
   -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%; box-sizing:border-box;
 }
 .bpmf *{box-sizing:border-box;}
