@@ -401,6 +401,16 @@ const CSS = `
   .bpmf .tile .p{font-size:11px;}
   .bpmf .tile,.bpmf .void,.bpmf input.fc{min-height:48px;}
   .bpmf input.fc{font-size:16px;}
+  /* pinbar: 1行目に文字・ピンイン・音声ボタン、2行目に説明を全幅表示 */
+  .bpmf .pinbar{grid-template-columns:44px 1fr auto;grid-template-rows:auto auto;}
+  .bpmf .pinbar .pbig{grid-column:1;grid-row:1;font-size:34px;align-self:center;}
+  .bpmf .pinbar .ppinyin{grid-column:2;grid-row:1;font-size:14px;}
+  .bpmf .pinbar .pspk{grid-column:3;grid-row:1;}
+  .bpmf .pinbar .ptip{
+    grid-column:1/-1;grid-row:2;
+    font-size:13px;line-height:1.55;
+    display:block;overflow:visible;
+  }
 }
 @media (prefers-reduced-motion:reduce){
   .bpmf *{transition:none !important;}
