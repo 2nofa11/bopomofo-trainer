@@ -147,6 +147,46 @@ const SAY: Record<string, string> = {
   ㄦ: "兒",
 };
 
+const EXAMPLE: Record<string, { word: string; gloss: string; zhuyin: string; pinyin: string }> = {
+  ㄅ: { word: "爸爸", gloss: "パパ", zhuyin: "ㄅㄚˋ ㄅㄚ˙", pinyin: "bà ba" },
+  ㄆ: { word: "蘋果", gloss: "りんご", zhuyin: "ㄆㄧㄥˊ ㄍㄨㄛˇ", pinyin: "píng guǒ" },
+  ㄇ: { word: "媽媽", gloss: "ママ", zhuyin: "ㄇㄚ ㄇㄚ˙", pinyin: "mā ma" },
+  ㄈ: { word: "飛機", gloss: "ひこうき", zhuyin: "ㄈㄟ ㄐㄧ", pinyin: "fēi jī" },
+  ㄉ: { word: "大象", gloss: "ぞう", zhuyin: "ㄉㄚˋ ㄒㄧㄤˋ", pinyin: "dà xiàng" },
+  ㄊ: { word: "太陽", gloss: "たいよう", zhuyin: "ㄊㄞˋ ㄧㄤˊ", pinyin: "tài yáng" },
+  ㄋ: { word: "牛奶", gloss: "ぎゅうにゅう", zhuyin: "ㄋㄧㄡˊ ㄋㄞˇ", pinyin: "niú nǎi" },
+  ㄌ: { word: "老虎", gloss: "トラ", zhuyin: "ㄌㄠˇ ㄏㄨˇ", pinyin: "lǎo hǔ" },
+  ㄍ: { word: "狗", gloss: "いぬ", zhuyin: "ㄍㄡˇ", pinyin: "gǒu" },
+  ㄎ: { word: "咖啡", gloss: "コーヒー", zhuyin: "ㄎㄚ ㄈㄟ", pinyin: "kā fēi" },
+  ㄏ: { word: "花", gloss: "はな", zhuyin: "ㄏㄨㄚ", pinyin: "huā" },
+  ㄐ: { word: "雞", gloss: "にわとり", zhuyin: "ㄐㄧ", pinyin: "jī" },
+  ㄑ: { word: "汽車", gloss: "じどうしゃ", zhuyin: "ㄑㄧˋ ㄔㄜ", pinyin: "qì chē" },
+  ㄒ: { word: "西瓜", gloss: "すいか", zhuyin: "ㄒㄧ ㄍㄨㄚ", pinyin: "xī guā" },
+  ㄓ: { word: "豬", gloss: "ぶた", zhuyin: "ㄓㄨ", pinyin: "zhū" },
+  ㄔ: { word: "茶", gloss: "おちゃ", zhuyin: "ㄔㄚˊ", pinyin: "chá" },
+  ㄕ: { word: "書", gloss: "ほん", zhuyin: "ㄕㄨ", pinyin: "shū" },
+  ㄖ: { word: "肉", gloss: "にく", zhuyin: "ㄖㄡˋ", pinyin: "ròu" },
+  ㄗ: { word: "嘴巴", gloss: "くち", zhuyin: "ㄗㄨㄟˇ ㄅㄚ˙", pinyin: "zuǐ ba" },
+  ㄘ: { word: "草", gloss: "くさ", zhuyin: "ㄘㄠˇ", pinyin: "cǎo" },
+  ㄙ: { word: "傘", gloss: "かさ", zhuyin: "ㄙㄢˇ", pinyin: "sǎn" },
+  ㄧ: { word: "衣服", gloss: "ふく", zhuyin: "ㄧ ㄈㄨ˙", pinyin: "yī fu" },
+  ㄨ: { word: "烏龜", gloss: "カメ", zhuyin: "ㄨ ㄍㄨㄟ", pinyin: "wū guī" },
+  ㄩ: { word: "魚", gloss: "さかな", zhuyin: "ㄩˊ", pinyin: "yú" },
+  ㄚ: { word: "阿姨", gloss: "おばさん", zhuyin: "ㄚ ㄧˊ", pinyin: "ā yí" },
+  ㄛ: { word: "婆婆", gloss: "おばあさん", zhuyin: "ㄆㄛˊ ㄆㄛ˙", pinyin: "pó po" },
+  ㄜ: { word: "鵝", gloss: "ガチョウ", zhuyin: "ㄜˊ", pinyin: "é" },
+  ㄝ: { word: "欸", gloss: "あいづちの「えっ」", zhuyin: "ㄝ", pinyin: "ê" },
+  ㄞ: { word: "愛", gloss: "あい", zhuyin: "ㄞˋ", pinyin: "ài" },
+  ㄟ: { word: "妹妹", gloss: "いもうと", zhuyin: "ㄇㄟˋ ㄇㄟ˙", pinyin: "mèi mei" },
+  ㄠ: { word: "貓", gloss: "ねこ", zhuyin: "ㄇㄠ", pinyin: "māo" },
+  ㄡ: { word: "藕", gloss: "れんこん", zhuyin: "ㄡˇ", pinyin: "ǒu" },
+  ㄢ: { word: "山", gloss: "やま", zhuyin: "ㄕㄢ", pinyin: "shān" },
+  ㄣ: { word: "人", gloss: "ひと", zhuyin: "ㄖㄣˊ", pinyin: "rén" },
+  ㄤ: { word: "糖", gloss: "あめ", zhuyin: "ㄊㄤˊ", pinyin: "táng" },
+  ㄥ: { word: "燈", gloss: "ランプ", zhuyin: "ㄉㄥ", pinyin: "dēng" },
+  ㄦ: { word: "耳朵", gloss: "みみ", zhuyin: "ㄦˇ ㄉㄨㄛ˙", pinyin: "ěr duo" },
+};
+
 const ALL = [...CONSONANTS, ...VOWELS];
 const byZ: Record<string, Consonant> = Object.fromEntries(
   CONSONANTS.map((c) => [`${c.place}|${c.manner}`, c]),
@@ -302,6 +342,12 @@ const CSS = `
 .bpmf .flash .ans .pinyin{font-size:34px;color:var(--ink);display:block;margin-bottom:2px;}
 .bpmf .tipline{font-size:12.5px;color:var(--sub);margin-top:6px;line-height:1.5;max-width:520px;}
 
+.bpmf .flash .qword{display:flex;flex-direction:column;align-items:center;gap:1px;margin-top:4px;}
+.bpmf .flash .qword .ew{font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:30px;color:var(--teal-d);line-height:1.15;}
+.bpmf .flash .qword .eg{font-size:13px;color:var(--sub);font-weight:700;}
+.bpmf .flash .qword .ezy{font-size:13px;color:var(--teal-d);font-weight:700;letter-spacing:.04em;}
+@media (max-width:560px){.bpmf .flash .qword .ew{font-size:24px;}}
+
 .bpmf .grades{display:flex;gap:10px;justify-content:center;margin-top:16px;}
 .bpmf .grade{font-family:"Zen Maru Gothic",sans-serif;font-weight:700;font-size:15px;border:2px solid var(--ink);
   padding:10px 22px;border-radius:12px;cursor:pointer;touch-action:manipulation;box-shadow:2px 3px 0 var(--ink);background:var(--paper2);}
@@ -447,11 +493,9 @@ function useSpeech(muted: boolean) {
     return () => window.speechSynthesis.removeEventListener("voiceschanged", load);
   }, [supported]);
 
-  const speakZ = useCallback(
-    (zhuyin: string) => {
-      if (muted || !supported) return;
-      const text = SAY[zhuyin];
-      if (!text) return;
+  const speak = useCallback(
+    (text: string) => {
+      if (muted || !supported || !text) return;
       try {
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
@@ -466,7 +510,10 @@ function useSpeech(muted: boolean) {
     [muted, supported],
   );
 
-  return { speakZ, supported };
+  const speakZ = useCallback((zhuyin: string) => speak(SAY[zhuyin] ?? ""), [speak]);
+  const speakText = useCallback((text: string) => speak(text), [speak]);
+
+  return { speakZ, speakText, supported };
 }
 
 /* ───────────────────────────── 一覧 (Reference) ───────────────────────────── */
@@ -570,10 +617,12 @@ function Flashcards({
   stats,
   bump,
   speakZ,
+  speakText,
 }: {
   stats: Stats;
   bump: (z: string, ok: boolean) => void;
   speakZ: (z: string) => void;
+  speakText: (text: string) => void;
 }) {
   const [dir, setDir] = useState("z2p"); // z2p | p2z | classify
   const [scope, setScope] = useState("consonant"); // consonant | vowel | all
@@ -630,6 +679,7 @@ function Flashcards({
 
   if (!current) return null;
   const isConsonant = "place" in current;
+  const ex = EXAMPLE[current.z];
   const total = session.yes + session.no;
   const acc = total ? Math.round((session.yes / total) * 100) : 0;
 
@@ -651,6 +701,25 @@ function Flashcards({
     back = (
       <div className="ans">
         <span className="pinyin">{current.z}</span>
+        {ex && (
+          <div className="qword">
+            <span className="ew">{ex.word}</span>
+            <span className="ezy">
+              {ex.zhuyin}　{ex.pinyin}
+            </span>
+            <span className="eg">{ex.gloss}</span>
+            <button
+              className="spk"
+              onClick={(e) => {
+                e.stopPropagation();
+                speakText(ex.word);
+              }}
+              aria-label={`${ex.word}を再生`}
+            >
+              🔊 {ex.word}
+            </button>
+          </div>
+        )}
       </div>
     );
   } else {
@@ -721,6 +790,29 @@ function Flashcards({
         aria-label="カード。タップで答えを表示"
       >
         <div className={`q ${frontKind}`}>{front}</div>
+        {frontKind === "zhuyin" && ex && (
+          <div className="qword">
+            <span className="ew">{ex.word}</span>
+            {flipped && (
+              <>
+                <span className="ezy">
+                  {ex.zhuyin}　{ex.pinyin}
+                </span>
+                <span className="eg">{ex.gloss}</span>
+                <button
+                  className="spk"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    speakText(ex.word);
+                  }}
+                  aria-label={`${ex.word}を再生`}
+                >
+                  🔊 {ex.word}
+                </button>
+              </>
+            )}
+          </div>
+        )}
         {!flipped ? (
           <div className="hint">{hint}（タップで確認）</div>
         ) : (
@@ -870,7 +962,7 @@ export default function BopomofoTrainer() {
   const [muted, setMuted] = useState(false);
   const statsRef = useRef<Stats>(stats);
   statsRef.current = stats;
-  const { speakZ, supported } = useSpeech(muted);
+  const { speakZ, speakText, supported } = useSpeech(muted);
 
   useEffect(() => {
     void safeStorage.load().then(setStats);
@@ -950,7 +1042,7 @@ export default function BopomofoTrainer() {
           <Reference stats={stats} speakZ={speakZ} />
         </div>
         <div style={tab !== "cards" ? { display: "none" } : undefined}>
-          <Flashcards stats={stats} bump={bump} speakZ={speakZ} />
+          <Flashcards stats={stats} bump={bump} speakZ={speakZ} speakText={speakText} />
         </div>
         <div style={tab !== "fill" ? { display: "none" } : undefined}>
           <FillChart bump={bump} />
