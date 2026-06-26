@@ -535,7 +535,7 @@ function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => voi
         </div>
       </div>
 
-      {sel ? (
+      {sel && (
         <div className="pinbar">
           <div className="pbig">{sel.z}</div>
           <div className="ppinyin">
@@ -550,8 +550,6 @@ function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => voi
             🔊
           </button>
         </div>
-      ) : (
-        <div className="pinbar empty">タイルをタップするとピンインと発音のコツが表示されます</div>
       )}
     </>
   );
