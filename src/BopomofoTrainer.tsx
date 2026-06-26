@@ -519,77 +519,106 @@ function useSpeech(muted: boolean) {
 /* ───────────────────────────── 一覧 (Reference) ───────────────────────────── */
 function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => void }) {
   const [sel, setSel] = useState<Item | null>(null);
+  const [section, setSection] = useState<"consonant" | "vowel">("consonant");
+
   const tap = (item: Item) => {
     setSel((prev) => (prev && prev.z === item.z ? null : item));
     speakZ(item.z);
   };
 
+  const switchSection = (s: "consonant" | "vowel") => {
+    setSection(s);
+    setSel(null);
+  };
+
   return (
     <>
       <div className="card">
-        <p className="secttl">子音 — 調音位置 × 調音方法</p>
-        <div className="grid" style={{ "--mcount": MANNERS.length } as React.CSSProperties}>
-          <div className="gh corner" />
-          {MANNERS.map((m) => (
-            <div key={m} className="gh" title={MANNER_TIPS[m]}>
-              {m}
-            </div>
-          ))}
-          {PLACES.map((place) => (
-            <React.Fragment key={place}>
-              <div className="gh rh" title={PLACE_TIPS[place]}>
-                {place}
-              </div>
-              {MANNERS.map((manner) => {
-                const c = byZ[`${place}|${manner}`];
-                if (!c)
-                  return (
-                    <div key={manner} className="void">
-                      ·
-                    </div>
-                  );
-                const mc = masteryColor(stats[c.z]);
-                const isSel = sel && sel.z === c.z;
-                return (
-                  <div className="tilewrap" key={manner}>
-                    <button
-                      className={`tile ${mannerClass(manner)} ${isSel ? "sel" : ""}`}
-                      onClick={() => tap(c)}
-                      aria-label={`${c.z} ${c.p} ${place} ${manner}`}
-                    >
-                      <span className="z">{c.z}</span>
-                      <span className="p">{c.p}</span>
-                    </button>
-                    {mc && <span className="mastery" style={{ background: mc }} />}
-                  </div>
-                );
-              })}
-            </React.Fragment>
-          ))}
+        <div className="seg" role="tablist" aria-label="音の種類" style={{ marginBottom: 16 }}>
+          <button
+            role="tab"
+            aria-selected={section === "consonant"}
+            aria-pressed={section === "consonant"}
+            onClick={() => switchSection("consonant")}
+          >
+            子音
+          </button>
+          <button
+            role="tab"
+            aria-selected={section === "vowel"}
+            aria-pressed={section === "vowel"}
+            onClick={() => switchSection("vowel")}
+          >
+            母音
+          </button>
         </div>
 
-        <p className="secttl" style={{ marginTop: 26 }}>
-          母音
-        </p>
-        <div className="vgrid">
-          {["介音", "単母音", "複母音", "鼻母音", "そり舌母音"].map((g) => (
-            <React.Fragment key={g}>
-              <div className="vgroup">{g}</div>
-              {VOWELS.filter((v) => v.group === g).map((v) => {
-                const mc = masteryColor(stats[v.z]);
-                return (
-                  <div className="tilewrap" key={v.z}>
-                    <button className="tile" onClick={() => tap(v)} aria-label={`${v.z} ${v.p}`}>
-                      <span className="z">{v.z}</span>
-                      <span className="p">{v.p}</span>
-                    </button>
-                    {mc && <span className="mastery" style={{ background: mc }} />}
+        {section === "consonant" && (
+          <>
+            <p className="secttl">調音位置 × 調音方法</p>
+            <div className="grid" style={{ "--mcount": MANNERS.length } as React.CSSProperties}>
+              <div className="gh corner" />
+              {MANNERS.map((m) => (
+                <div key={m} className="gh" title={MANNER_TIPS[m]}>
+                  {m}
+                </div>
+              ))}
+              {PLACES.map((place) => (
+                <React.Fragment key={place}>
+                  <div className="gh rh" title={PLACE_TIPS[place]}>
+                    {place}
                   </div>
-                );
-              })}
-            </React.Fragment>
-          ))}
-        </div>
+                  {MANNERS.map((manner) => {
+                    const c = byZ[`${place}|${manner}`];
+                    if (!c)
+                      return (
+                        <div key={manner} className="void">
+                          ·
+                        </div>
+                      );
+                    const mc = masteryColor(stats[c.z]);
+                    const isSel = sel && sel.z === c.z;
+                    return (
+                      <div className="tilewrap" key={manner}>
+                        <button
+                          className={`tile ${mannerClass(manner)} ${isSel ? "sel" : ""}`}
+                          onClick={() => tap(c)}
+                          aria-label={`${c.z} ${c.p} ${place} ${manner}`}
+                        >
+                          <span className="z">{c.z}</span>
+                          <span className="p">{c.p}</span>
+                        </button>
+                        {mc && <span className="mastery" style={{ background: mc }} />}
+                      </div>
+                    );
+                  })}
+                </React.Fragment>
+              ))}
+            </div>
+          </>
+        )}
+
+        {section === "vowel" && (
+          <div className="vgrid">
+            {["介音", "単母音", "複母音", "鼻母音", "そり舌母音"].map((g) => (
+              <React.Fragment key={g}>
+                <div className="vgroup">{g}</div>
+                {VOWELS.filter((v) => v.group === g).map((v) => {
+                  const mc = masteryColor(stats[v.z]);
+                  return (
+                    <div className="tilewrap" key={v.z}>
+                      <button className="tile" onClick={() => tap(v)} aria-label={`${v.z} ${v.p}`}>
+                        <span className="z">{v.z}</span>
+                        <span className="p">{v.p}</span>
+                      </button>
+                      {mc && <span className="mastery" style={{ background: mc }} />}
+                    </div>
+                  );
+                })}
+              </React.Fragment>
+            ))}
+          </div>
+        )}
       </div>
 
       {sel && (
