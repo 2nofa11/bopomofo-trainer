@@ -603,15 +603,10 @@ function Flashcards({
       const weight = 1 + Math.round((1 - rate) * 4) + (s.seen === 0 ? 2 : 0);
       for (let i = 0; i < weight; i++) weighted.push(item);
     });
-    let next = weighted[Math.floor(Math.random() * weighted.length)];
-    if (current && pool.length > 1) {
-      let guard = 0;
-      while (next.z === current.z && guard < 8) {
-        next = weighted[Math.floor(Math.random() * weighted.length)];
-        guard++;
-      }
-    }
-    return next;
+    // currentと同じカードを候補から除外して確実に別のカードを選ぶ
+    const candidates =
+      current && pool.length > 1 ? weighted.filter((item) => item.z !== current.z) : weighted;
+    return candidates[Math.floor(Math.random() * candidates.length)];
   }, [pool, stats, current]);
 
   useEffect(() => {
@@ -951,9 +946,15 @@ export default function BopomofoTrainer() {
           ))}
         </div>
 
-        {tab === "ref" && <Reference stats={stats} speakZ={speakZ} />}
-        {tab === "cards" && <Flashcards stats={stats} bump={bump} speakZ={speakZ} />}
-        {tab === "fill" && <FillChart bump={bump} />}
+        <div style={tab !== "ref" ? { display: "none" } : undefined}>
+          <Reference stats={stats} speakZ={speakZ} />
+        </div>
+        <div style={tab !== "cards" ? { display: "none" } : undefined}>
+          <Flashcards stats={stats} bump={bump} speakZ={speakZ} />
+        </div>
+        <div style={tab !== "fill" ? { display: "none" } : undefined}>
+          <FillChart bump={bump} />
+        </div>
 
         <p className="foot">
           出典：「ボポモフォと発音のコツ」（モーガンの台湾中国語講座 / Morgan Mandarin）
