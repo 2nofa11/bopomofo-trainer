@@ -294,6 +294,7 @@ const CSS = `
 .bpmf .tile .z{font-size:22px;font-weight:900;line-height:1;}
 .bpmf .tile .p{font-size:12px;color:var(--sub);font-weight:700;}
 .bpmf .tile.sel{background:var(--amber);box-shadow:2px 3px 0 var(--amber-d);}
+.bpmf .tile.flash-current{outline:3px solid var(--teal);outline-offset:-2px;}
 .bpmf .tile.m0{background:#EAF4F2;} /* 無気 */
 .bpmf .tile.m1{background:#FBEEDD;} /* 有気 */
 .bpmf .tile.m2{background:#EFEAF6;} /* 鼻 */
@@ -508,7 +509,13 @@ function useSpeech(muted: boolean) {
 }
 
 /* ───────────────────────────── 一覧 (Reference) ───────────────────────────── */
-function Reference({ speakZ }: { speakZ: (z: string) => void }) {
+function Reference({
+  speakZ,
+  highlightZ,
+}: {
+  speakZ: (z: string) => void;
+  highlightZ: string | null;
+}) {
   const [sel, setSel] = useState<Item | null>(null);
   const [section, setSection] = useState<"consonant" | "vowel">("consonant");
 
@@ -571,7 +578,7 @@ function Reference({ speakZ }: { speakZ: (z: string) => void }) {
                     return (
                       <button
                         key={manner}
-                        className={`tile ${mannerClass(manner)} ${isSel ? "sel" : ""}`}
+                        className={`tile ${mannerClass(manner)} ${isSel ? "sel" : ""} ${c.z === highlightZ ? "flash-current" : ""}`}
                         onClick={() => tap(c)}
                         aria-label={`${c.z} ${c.p} ${place} ${manner}`}
                       >
@@ -594,7 +601,7 @@ function Reference({ speakZ }: { speakZ: (z: string) => void }) {
                 {VOWELS.filter((v) => v.group === g).map((v) => (
                   <button
                     key={v.z}
-                    className="tile"
+                    className={`tile ${v.z === highlightZ ? "flash-current" : ""}`}
                     onClick={() => tap(v)}
                     aria-label={`${v.z} ${v.p}`}
                   >
@@ -633,12 +640,14 @@ function Flashcards({
   mastered,
   markMastered,
   resetMastered,
+  onCurrentChange,
   speakZ,
   speakText,
 }: {
   mastered: Set<string>;
   markMastered: (z: string) => void;
   resetMastered: () => void;
+  onCurrentChange: (z: string | null) => void;
   speakZ: (z: string) => void;
   speakText: (text: string) => void;
 }) {
@@ -678,6 +687,10 @@ function Flashcards({
     setCurrent(pick());
     setFlipped(false);
   }, [scope, dir]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    onCurrentChange(current?.z ?? null);
+  }, [current]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const next = (currentZ?: string) => {
     setCurrent(pick(currentZ));
@@ -1021,6 +1034,7 @@ export default function BopomofoTrainer() {
   const [tab, setTab] = useState("ref");
   const [mastered, setMastered] = useState<Set<string>>(new Set());
   const [muted, setMuted] = useState(false);
+  const [flashCurrentZ, setFlashCurrentZ] = useState<string | null>(null);
   const { speakZ, speakText, supported } = useSpeech(muted);
 
   useEffect(() => {
@@ -1096,13 +1110,14 @@ export default function BopomofoTrainer() {
         </div>
 
         <div style={tab !== "ref" ? { display: "none" } : undefined}>
-          <Reference speakZ={speakZ} />
+          <Reference speakZ={speakZ} highlightZ={flashCurrentZ} />
         </div>
         <div style={tab !== "cards" ? { display: "none" } : undefined}>
           <Flashcards
             mastered={mastered}
             markMastered={markMastered}
             resetMastered={resetMastered}
+            onCurrentChange={setFlashCurrentZ}
             speakZ={speakZ}
             speakText={speakText}
           />
