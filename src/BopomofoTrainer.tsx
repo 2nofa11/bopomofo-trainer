@@ -3,7 +3,6 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from "react"
 type Consonant = { z: string; p: string; place: string; manner: string };
 type Vowel = { z: string; p: string; group: string };
 type Item = Consonant | Vowel;
-type Stats = Record<string, { seen: number; correct: number }>;
 
 /* ───────────────────────────── データ ─────────────────────────────
    出典: 「ボポモフォと発音のコツ.pdf」(モーガンの台湾中国語講座 / Morgan Mandarin)
@@ -88,18 +87,18 @@ const VOWEL_GROUP_TIPS: Record<string, string> = {
 const VOWEL_TIPS: Record<string, string> = {
   ㄧ: "日本語の「い」の音とほぼ同じです。「い」よりも、もっと口を横に開いて「い」と発音します。",
   ㄨ: "日本語の「う」の音とほぼ同じです。「う」よりも、唇をもっとすぼめて「う」と発音します。",
-  ㄩ: "日本語にはない音です。唇は「ㄨ」よりさらに口をすぼめ、“い”と“ゆ”の中間くらいの気持ちで発音します。",
+  ㄩ: "日本語にはない音です。唇は「ㄨ」よりさらに口をすぼめ、「い」と「ゆ」の中間くらいの気持ちで発音します。",
   ㄚ: "日本語の「あ」の音とほぼ同じです。ポイントは、口を大きく開けることを意識して「あ」と言います。",
   ㄛ: "唇をすぼめて「お」と言います。日本語の「お」よりも、「う」というように、口を突き出します。",
   ㄜ: "日本語にはない音です。英語の about の a の発音に近いです。口は、横に広げて発音します。",
-  ㄝ: "ひらがなの“せ”みたいですが、音はまったく違います。日本語の「え」の音と同じ発音で大丈夫です。",
+  ㄝ: "ひらがなの「せ」みたいですが、音はまったく違います。日本語の「え」の音と同じ発音で大丈夫です。",
   ㄞ: "「あぃ」という風に、「あ」を強く発音し、「い」を小さくくっつける感じです。一つの音として滑らかに発音します。",
   ㄟ: "「えぃ」という風に、「え」を強く発音し、「い」を小さくくっつける感じです。一つの音として滑らかに発音します。",
   ㄠ: "「あぉ」という感じで「あ」を強く言ったあとに、「うの口」くらい口を突き出して「ぉ」をそえるイメージです。日本語の「お」よりも口を突き出すので、「あぉ」よりは「あぅ」に近い音になります。一つの音として滑らかに発音します。",
   ㄡ: "日本語の「おう」に近い音です。口を思いっきりすぼめ突き出して「お」を強く「おぅ」と発音します。一つの音として滑らかに発音します。",
   ㄢ: "「あん」の「ん」を発音するときに、舌を出して、歯で噛んで「ん」とちゃんと発音して終わらせます。",
   ㄣ: "「えん」の「ん」を発音するときに、舌尖を上の歯ぐきにつけ「ん」の音をはっきりと発音します。",
-  ㄤ: "普通に「あん」と言ってみて、舌の後ろが上あごにくっついた状態にします。この状態で、鼻に息を通して“ん”と発音します。口を開いたまま、舌の後ろを上あごにくっつけて終わらせる音です。",
+  ㄤ: "普通に「あん」と言ってみて、舌の後ろが上あごにくっついた状態にします。この状態で、鼻に息を通して「ん」と発音します。口を開いたまま、舌の後ろを上あごにくっつけて終わらせる音です。",
   ㄥ: "舌は「ㄤ」と同様に、口を開いたまま、舌の後ろが盛り上がって、上あごにくっついている状態で発音します。喉の奥で響く、「ㄜン」に近い音です。",
   ㄦ: "舌をそりあげて発音する音です。この音は単独で、この音のみ発音します。子音とくっつくことはありません。英語の発音、hard の r の発音に近いです。口を半開きにし、舌をそりあげて発音します。",
 };
@@ -193,21 +192,21 @@ const byZ: Record<string, Consonant> = Object.fromEntries(
 );
 
 /* ───────────────────────── 永続ストレージ ─────────────────────────
-   localStorage を使って学習記録をセッション横断で保存する。
+   習得済みの注音符号を Set<string> として localStorage に保存する。
 */
-const STORE_KEY = "bopomofo:stats:v1";
-const safeStorage = {
-  async load() {
+const STORE_KEY = "bopomofo:mastered:v2";
+const masteredStorage = {
+  async load(): Promise<Set<string>> {
     try {
       const v = localStorage.getItem(STORE_KEY);
-      return v ? JSON.parse(v) : {};
+      return v ? new Set(JSON.parse(v) as string[]) : new Set<string>();
     } catch {
-      return {};
+      return new Set<string>();
     }
   },
-  async save(stats: Record<string, { seen: number; correct: number }>) {
+  async save(mastered: Set<string>) {
     try {
-      localStorage.setItem(STORE_KEY, JSON.stringify(stats));
+      localStorage.setItem(STORE_KEY, JSON.stringify([...mastered]));
     } catch {
       /* 保存に失敗しても学習自体は続行できる */
     }
@@ -303,9 +302,6 @@ const CSS = `
 .bpmf .void{background:var(--void);border-radius:12px;min-height:54px;
   display:flex;align-items:center;justify-content:center;color:#C9BFA4;font-size:18px;}
 
-.bpmf .mastery{position:absolute;top:5px;right:6px;width:7px;height:7px;border-radius:50%;}
-.bpmf .tilewrap{position:relative;}
-
 /* 母音 */
 .bpmf .vgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;}
 .bpmf .vgroup{font-size:11px;color:var(--sub);font-weight:700;grid-column:1/-1;margin-top:4px;}
@@ -357,10 +353,12 @@ const CSS = `
 .bpmf .progress{display:flex;gap:16px;justify-content:center;align-items:center;margin-top:18px;
   font-size:13px;color:var(--sub);flex-wrap:wrap;}
 .bpmf .pill{background:var(--paper2);border:1px solid var(--line);border-radius:20px;padding:4px 12px;font-weight:700;}
-.bpmf .pill.g{color:var(--moss);} .bpmf .pill.r{color:var(--coral);}
+.bpmf .pill.g{color:var(--moss);}
 
-.bpmf .bar{height:8px;background:var(--void);border-radius:5px;overflow:hidden;margin-top:14px;}
-.bpmf .bar > span{display:block;height:100%;background:var(--teal);transition:width .3s;}
+.bpmf .complete{text-align:center;padding:32px 20px;display:flex;flex-direction:column;align-items:center;gap:16px;}
+.bpmf .complete .big-check{font-size:56px;line-height:1;}
+.bpmf .complete .msg{font-family:"Zen Maru Gothic",sans-serif;font-weight:700;font-size:18px;color:var(--moss);}
+.bpmf .complete .sub{font-size:13.5px;color:var(--sub);}
 
 /* チャート埋め */
 .bpmf .fillgrid{display:grid;gap:6px;overflow-x:auto;padding-bottom:4px;
@@ -465,13 +463,6 @@ const CSS = `
 
 /* ───────────────────────────── helpers ───────────────────────────── */
 const mannerClass = (m: string) => `m${MANNERS.indexOf(m)}`;
-const masteryColor = (s: Stats[string] | undefined) => {
-  if (!s || s.seen === 0) return null;
-  const rate = s.correct / s.seen;
-  if (rate >= 0.8 && s.seen >= 2) return "var(--moss)";
-  if (rate >= 0.5) return "var(--amber)";
-  return "var(--coral)";
-};
 
 /* 台湾華語(zh-TW)優先で発音する。漢字を渡すことで正しい音にする。 */
 function useSpeech(muted: boolean) {
@@ -517,7 +508,7 @@ function useSpeech(muted: boolean) {
 }
 
 /* ───────────────────────────── 一覧 (Reference) ───────────────────────────── */
-function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => void }) {
+function Reference({ speakZ }: { speakZ: (z: string) => void }) {
   const [sel, setSel] = useState<Item | null>(null);
   const [section, setSection] = useState<"consonant" | "vowel">("consonant");
 
@@ -576,20 +567,17 @@ function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => voi
                           ·
                         </div>
                       );
-                    const mc = masteryColor(stats[c.z]);
                     const isSel = sel && sel.z === c.z;
                     return (
-                      <div className="tilewrap" key={manner}>
-                        <button
-                          className={`tile ${mannerClass(manner)} ${isSel ? "sel" : ""}`}
-                          onClick={() => tap(c)}
-                          aria-label={`${c.z} ${c.p} ${place} ${manner}`}
-                        >
-                          <span className="z">{c.z}</span>
-                          <span className="p">{c.p}</span>
-                        </button>
-                        {mc && <span className="mastery" style={{ background: mc }} />}
-                      </div>
+                      <button
+                        key={manner}
+                        className={`tile ${mannerClass(manner)} ${isSel ? "sel" : ""}`}
+                        onClick={() => tap(c)}
+                        aria-label={`${c.z} ${c.p} ${place} ${manner}`}
+                      >
+                        <span className="z">{c.z}</span>
+                        <span className="p">{c.p}</span>
+                      </button>
                     );
                   })}
                 </React.Fragment>
@@ -603,18 +591,17 @@ function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => voi
             {["介音", "単母音", "複母音", "鼻母音", "そり舌母音"].map((g) => (
               <React.Fragment key={g}>
                 <div className="vgroup">{g}</div>
-                {VOWELS.filter((v) => v.group === g).map((v) => {
-                  const mc = masteryColor(stats[v.z]);
-                  return (
-                    <div className="tilewrap" key={v.z}>
-                      <button className="tile" onClick={() => tap(v)} aria-label={`${v.z} ${v.p}`}>
-                        <span className="z">{v.z}</span>
-                        <span className="p">{v.p}</span>
-                      </button>
-                      {mc && <span className="mastery" style={{ background: mc }} />}
-                    </div>
-                  );
-                })}
+                {VOWELS.filter((v) => v.group === g).map((v) => (
+                  <button
+                    key={v.z}
+                    className="tile"
+                    onClick={() => tap(v)}
+                    aria-label={`${v.z} ${v.p}`}
+                  >
+                    <span className="z">{v.z}</span>
+                    <span className="p">{v.p}</span>
+                  </button>
+                ))}
               </React.Fragment>
             ))}
           </div>
@@ -643,25 +630,26 @@ function Reference({ stats, speakZ }: { stats: Stats; speakZ: (z: string) => voi
 
 /* ───────────────────────────── フラッシュカード ───────────────────────────── */
 function Flashcards({
-  stats,
-  bump,
+  mastered,
+  markMastered,
+  resetMastered,
   speakZ,
   speakText,
 }: {
-  stats: Stats;
-  bump: (z: string, ok: boolean) => void;
+  mastered: Set<string>;
+  markMastered: (z: string) => void;
+  resetMastered: () => void;
   speakZ: (z: string) => void;
   speakText: (text: string) => void;
 }) {
   const [dir, setDir] = useState("z2p"); // z2p | p2z | classify
   const [scope, setScope] = useState("consonant"); // consonant | vowel | all
   const [flipped, setFlipped] = useState(false);
-  const [session, setSession] = useState({ yes: 0, no: 0 });
   const [current, setCurrent] = useState<Item | null>(null);
 
   const reveal = () => {
     setFlipped((f) => {
-      if (!f && current) speakZ(current.z); // 表→裏の瞬間に発音
+      if (!f && current) speakZ(current.z);
       return !f;
     });
   };
@@ -672,45 +660,73 @@ function Flashcards({
     return ALL;
   }, [scope]);
 
-  // 弱いカードを重み付けで選ぶ（SRS-lite）
-  const pick = useCallback(() => {
-    const weighted: Item[] = [];
-    pool.forEach((item) => {
-      const s = stats[item.z] || { seen: 0, correct: 0 };
-      const rate = s.seen ? s.correct / s.seen : 0;
-      const weight = 1 + Math.round((1 - rate) * 4) + (s.seen === 0 ? 2 : 0);
-      for (let i = 0; i < weight; i++) weighted.push(item);
-    });
-    // currentと同じカードを候補から除外して確実に別のカードを選ぶ
-    const candidates =
-      current && pool.length > 1 ? weighted.filter((item) => item.z !== current.z) : weighted;
-    return candidates[Math.floor(Math.random() * candidates.length)];
-  }, [pool, stats, current]);
+  // 未習得カードのみランダム選出
+  const pick = useCallback(
+    (exclude?: string) => {
+      const unmastered = pool.filter((item) => !mastered.has(item.z));
+      if (unmastered.length === 0) return null;
+      const candidates =
+        exclude && unmastered.length > 1
+          ? unmastered.filter((item) => item.z !== exclude)
+          : unmastered;
+      return candidates[Math.floor(Math.random() * candidates.length)];
+    },
+    [pool, mastered],
+  );
 
   useEffect(() => {
     setCurrent(pick());
     setFlipped(false);
-    setSession({ yes: 0, no: 0 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scope, dir]);
+  }, [scope, dir]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const next = () => {
-    setCurrent(pick());
+  const next = (currentZ?: string) => {
+    setCurrent(pick(currentZ));
     setFlipped(false);
   };
 
   const grade = (ok: boolean) => {
     if (!current) return;
-    bump(current.z, ok);
-    setSession((s) => ({ yes: s.yes + (ok ? 1 : 0), no: s.no + (ok ? 0 : 1) }));
-    next();
+    if (ok) markMastered(current.z);
+    next(current.z);
   };
+
+  const unmasteredCount = pool.filter((item) => !mastered.has(item.z)).length;
+  const masteredCount = pool.length - unmasteredCount;
+
+  // 全習得済み
+  if (unmasteredCount === 0) {
+    return (
+      <div className="card">
+        <div className="controls">
+          <div className="seg" role="group" aria-label="出題範囲">
+            {[
+              ["consonant", "子音"],
+              ["vowel", "母音"],
+              ["all", "すべて"],
+            ].map(([v, l]) => (
+              <button key={v} aria-pressed={scope === v} onClick={() => setScope(v)}>
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="complete">
+          <div className="big-check">🎉</div>
+          <div className="msg">すべて習得しました！</div>
+          <div className="sub">
+            {pool.length} 音すべてに正答しました。リセットしてもう一度練習できます。
+          </div>
+          <button className="btn" onClick={resetMastered}>
+            リセットして最初から
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!current) return null;
   const isConsonant = "place" in current;
   const ex = EXAMPLE[current.z];
-  const total = session.yes + session.no;
-  const acc = total ? Math.round((session.yes / total) * 100) : 0;
 
   // 表面・裏面の内容
   let front: string, frontKind: string, hint: string, back: React.ReactNode;
@@ -884,17 +900,17 @@ function Flashcards({
       )}
 
       <div className="progress">
-        <span>このセッション {total} 枚</span>
-        <span className="pill g">○ {session.yes}</span>
-        <span className="pill r">× {session.no}</span>
-        <span className="pill">正答率 {acc}%</span>
+        <span className="pill g">
+          習得済み {masteredCount} / {pool.length}
+        </span>
+        <span>残り {unmasteredCount} 音</span>
       </div>
     </div>
   );
 }
 
 /* ───────────────────────────── チャート埋め ───────────────────────────── */
-function FillChart({ bump }: { bump: (z: string, ok: boolean) => void }) {
+function FillChart({ onCorrect }: { onCorrect: (z: string) => void }) {
   const [vals, setVals] = useState<Record<string, string>>({});
   const [checked, setChecked] = useState(false);
 
@@ -908,8 +924,7 @@ function FillChart({ bump }: { bump: (z: string, ok: boolean) => void }) {
   const check = () => {
     setChecked(true);
     CONSONANTS.forEach((c) => {
-      const ok = norm(vals[c.z]) === c.p;
-      bump(c.z, ok);
+      if (norm(vals[c.z]) === c.p) onCorrect(c.z);
     });
   };
 
@@ -976,8 +991,25 @@ function FillChart({ bump }: { bump: (z: string, ok: boolean) => void }) {
         )}
       </div>
       {checked && pct < 100 && (
-        <div className="bar">
-          <span style={{ width: `${pct}%` }} />
+        <div
+          className="bar"
+          style={{
+            height: 8,
+            background: "var(--void)",
+            borderRadius: 5,
+            overflow: "hidden",
+            marginTop: 14,
+          }}
+        >
+          <span
+            style={{
+              display: "block",
+              height: "100%",
+              background: "var(--teal)",
+              width: `${pct}%`,
+              transition: "width .3s",
+            }}
+          />
         </div>
       )}
     </div>
@@ -987,35 +1019,32 @@ function FillChart({ bump }: { bump: (z: string, ok: boolean) => void }) {
 /* ───────────────────────────── ルート ───────────────────────────── */
 export default function BopomofoTrainer() {
   const [tab, setTab] = useState("ref");
-  const [stats, setStats] = useState<Stats>({});
+  const [mastered, setMastered] = useState<Set<string>>(new Set());
   const [muted, setMuted] = useState(false);
-  const statsRef = useRef<Stats>(stats);
-  statsRef.current = stats;
   const { speakZ, speakText, supported } = useSpeech(muted);
 
   useEffect(() => {
-    void safeStorage.load().then(setStats);
+    void masteredStorage.load().then(setMastered);
   }, []);
 
-  const bump = useCallback((z: string, ok: boolean) => {
-    setStats((prev) => {
-      const cur = prev[z] || { seen: 0, correct: 0 };
-      const nextStats = {
-        ...prev,
-        [z]: { seen: cur.seen + 1, correct: cur.correct + (ok ? 1 : 0) },
-      };
-      void safeStorage.save(nextStats);
-      return nextStats;
+  const markMastered = useCallback((z: string) => {
+    setMastered((prev) => {
+      const next = new Set(prev);
+      next.add(z);
+      void masteredStorage.save(next);
+      return next;
     });
   }, []);
 
-  const resetAll = () => {
-    if (!window.confirm("学習記録（習熟度）をすべて消去しますか？")) return;
-    setStats({});
-    void safeStorage.clear();
-  };
+  const resetMastered = useCallback(() => {
+    setMastered(new Set());
+    void masteredStorage.clear();
+  }, []);
 
-  const learned = Object.values(stats).filter((s) => s.seen > 0).length;
+  const resetAll = () => {
+    if (!window.confirm("学習記録（習得済み）をすべて消去しますか？")) return;
+    resetMastered();
+  };
 
   return (
     <div className="bpmf">
@@ -1039,8 +1068,7 @@ export default function BopomofoTrainer() {
         <p className="lede">
           注音符号と発音のコツを覚えるためのアプリ。子音は「調音位置×調音方法」の表で、
           位置と方法のヒントから音を引き出せるように練習します。タイルやカードを押すと
-          台湾華語（zh-TW）で発音が鳴ります。学習記録は端末に保存されます（記録済み {learned} /{" "}
-          {ALL.length} 音）。
+          台湾華語（zh-TW）で発音が鳴ります。習得済み {mastered.size} / {ALL.length} 音。
         </p>
         {!supported && (
           <p className="lede" style={{ color: "var(--coral)" }}>
@@ -1068,13 +1096,19 @@ export default function BopomofoTrainer() {
         </div>
 
         <div style={tab !== "ref" ? { display: "none" } : undefined}>
-          <Reference stats={stats} speakZ={speakZ} />
+          <Reference speakZ={speakZ} />
         </div>
         <div style={tab !== "cards" ? { display: "none" } : undefined}>
-          <Flashcards stats={stats} bump={bump} speakZ={speakZ} speakText={speakText} />
+          <Flashcards
+            mastered={mastered}
+            markMastered={markMastered}
+            resetMastered={resetMastered}
+            speakZ={speakZ}
+            speakText={speakText}
+          />
         </div>
         <div style={tab !== "fill" ? { display: "none" } : undefined}>
-          <FillChart bump={bump} />
+          <FillChart onCorrect={markMastered} />
         </div>
 
         <p className="foot">
